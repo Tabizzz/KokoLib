@@ -3,6 +3,7 @@ using System.Reflection;
 using System;
 using Terraria.ModLoader;
 using System.Linq;
+using Terraria;
 
 namespace KokoLib;
 
@@ -63,13 +64,33 @@ public class Net<T>
 
 		ILGenerator generator = methodBuilder.GetILGenerator();
 		var lc0 = generator.DeclareLocal(typeof(ModPacket));
+		var netlabel = generator.DefineLabel();
 
 		var gp = mod.GetPacket;
 		var gpmi = gp.Method;
 
 		var thisT = typeof(Net<T>);
 		var modf = thisT.GetField("mod", BindingFlags.Static | BindingFlags.Public);
-		
+
+		generator.Emit(OpCodes.Ldsfld, typeof(Main).GetField("netMode"));
+		generator.Emit(OpCodes.Ldc_I4_0);
+		generator.Emit(OpCodes.Ceq);
+
+		generator.Emit(OpCodes.Brfalse_S, netlabel);
+
+		generator.Emit(OpCodes.Call, thisT.GetProperty("Handler").GetMethod);
+
+		for (int i = 0; i < paramTypes.Length; i++)
+		{
+			generator.Emit(OpCodes.Ldarg_S, (short)i + 1);
+		}
+
+		generator.Emit(OpCodes.Callvirt, interfaceMethodInfo);
+
+		generator.Emit(OpCodes.Ret);
+
+
+		generator.MarkLabel(netlabel);
 		
 		generator.Emit(OpCodes.Ldsfld, modf);
 		generator.Emit(OpCodes.Ldc_I4, 256);
