@@ -41,6 +41,7 @@ public abstract class ModHandler<T> : ModHandler where T : class
 public abstract class ModHandler : ModType
 {
 	public byte type;
+	public int WhoAmI;
 
 	internal abstract void CreateProxy();
 

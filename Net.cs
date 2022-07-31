@@ -7,15 +7,10 @@ using Terraria.ModLoader;
 
 namespace KokoLib;
 
-public class Net
+public partial class Net
 {
 	internal const string ProxyModuleName = "KokoLib.Proxys";
 	internal static ModuleBuilder moduleBuilder;
-
-	public static void Handle(BinaryReader reader, int whoAmI)
-	{
-
-	}
 
 	static Net()
 	{

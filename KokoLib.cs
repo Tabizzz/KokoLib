@@ -12,7 +12,7 @@ public class KokoLib : Mod
 
 	public override void PostSetupContent()
 	{
-		Handlers.Sort((h, o) => h.Name.CompareTo(o));
+		Handlers.Sort((h, o) => h.Name.CompareTo(o.Name));
 
 		ModHandlers = Handlers.ToArray();
 		byte vid = 0;
@@ -34,7 +34,8 @@ public class KokoLib : Mod
 	{
 		var index = reader.ReadByte();
 		var method = reader.ReadByte();
-		
+		ModHandlers[index].WhoAmI = whoAmI;
 		ModHandlers[index].Handle(reader, method);
+		ModHandlers[index].WhoAmI = -1;
 	}
 }
