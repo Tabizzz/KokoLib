@@ -4,6 +4,7 @@ using System;
 using Terraria.ModLoader;
 using System.Linq;
 using Terraria;
+using System.IO;
 
 namespace KokoLib;
 
@@ -20,32 +21,35 @@ public class Net<T>
 
 	public static T Handler => handler;
 
-	internal static void CreateProxy(ModuleBuilder moduleBuilder)
+	internal static void CreateProxy(ModuleBuilder moduleBuilder, byte type)
 	{
-		var clientType = GenerateInterfaceImplementation(moduleBuilder);
+		var clientType = GenerateInterfaceImplementation(moduleBuilder, type);
 		mod.Logger.Info($"Generated proxy handler: {clientType}");
 		proxy = (T)Activator.CreateInstance(clientType);
 	}
 
-	private static Type GenerateInterfaceImplementation(ModuleBuilder moduleBuilder)
+	private static Type GenerateInterfaceImplementation(ModuleBuilder moduleBuilder, byte id)
 	{
 		var type = moduleBuilder.DefineType(
-				Net.ProxyModuleName + "." + typeof(T).Name + "Impl",
+				Net.ProxyModuleName + "." + typeof(T).Name + "Proxy",
 				TypeAttributes.Public,
 				typeof(object),
 				new[] { typeof(T) });
 
 		BuildConstructor(type);
 
-		foreach (var method in Net.GetAllInterfaceMethods(typeof(T)))
+		var t = Net.GetAllInterfaceMethods(typeof(T)).ToList();
+		t.Sort((m, o) => m.Name.CompareTo(o.Name));
+		byte i = 0;
+		foreach (var method in t)
 		{
-			BuildMethod(type, method);
+			BuildMethod(type, method, i++, id);
 		}
 
 		return type.CreateType();
 	}
 
-	private static void BuildMethod(TypeBuilder type, MethodInfo interfaceMethodInfo)
+	private static void BuildMethod(TypeBuilder type, MethodInfo interfaceMethodInfo, byte v, byte id)
 	{
 		MethodAttributes methodAttributes =
 				 MethodAttributes.Public
@@ -98,6 +102,14 @@ public class Net<T>
 		generator.Emit(OpCodes.Callvirt, gpmi);
 		generator.Emit(OpCodes.Stloc_0);
 
+		generator.Emit(OpCodes.Ldloc_0);
+		generator.Emit(OpCodes.Ldc_I4_S, id);
+		var write = typeof(ModPacket).GetMethod("Write", new Type[] { typeof(byte) });
+		generator.Emit(OpCodes.Callvirt, write);
+		generator.Emit(OpCodes.Ldloc_0);
+		generator.Emit(OpCodes.Ldc_I4_S, v);
+		generator.Emit(OpCodes.Callvirt, write);
+
 		for (int i = 0; i < paramTypes.Length; i++)
 		{
 			TypeEmitter.Emit(generator, i, paramTypes[i]);
@@ -125,5 +137,25 @@ public class Net<T>
 		generator.Emit(OpCodes.Ldarg_0);
 		generator.Emit(OpCodes.Call, ctor);
 		generator.Emit(OpCodes.Ret);
+	}
+
+	internal static Action<BinaryReader, T> WrapMethod(MethodInfo m)
+	{
+		var paramTypes = m.GetParameters().Select(param => param.ParameterType).ToArray();
+		var met = new DynamicMethod(m.Name + "Wrap", typeof(void), new Type[] { typeof(BinaryReader) , typeof(T) });
+		var il = met.GetILGenerator();
+
+		il.Emit(OpCodes.Ldarg_1);
+
+		foreach (var v in paramTypes)
+		{
+			TypeEmitter.Emit(il, v);
+		}
+
+		il.Emit(OpCodes.Callvirt, m);
+
+		il.Emit(OpCodes.Ret);
+
+		return met.CreateDelegate<Action<BinaryReader, T>>();
 	}
 }

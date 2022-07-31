@@ -10,7 +10,7 @@ namespace KokoLib;
 public class Net
 {
 	internal const string ProxyModuleName = "KokoLib.Proxys";
-	private static ModuleBuilder moduleBuilder;
+	internal static ModuleBuilder moduleBuilder;
 
 	public static void Handle(BinaryReader reader, int whoAmI)
 	{
@@ -24,16 +24,14 @@ public class Net
 		moduleBuilder = assemblyBuilder.DefineDynamicModule(ProxyModuleName);
 	}
 
-	internal static int Register<T>(Mod mod, ModHandler<T> modHandler, T handler) where T : class
+	internal static void Register<T>(ModHandler modHandler, T handler) where T : class
 	{
 		ValidateInterface<T>();
 		ValidateMethods<T>();
 
-		Net<T>.mod = mod;
+		KokoLib.Handlers.Add(modHandler);
+		Net<T>.mod = ModLoader.GetMod("KokoLib");
 		Net<T>.handler = handler;
-		Net<T>.CreateProxy(moduleBuilder);
-
-		return 0;
 	}
 
 	private static int ValidateMethods<T>() where T : class
