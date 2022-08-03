@@ -2,7 +2,7 @@
 
 namespace KokoLib;
 
-public partial class Net
+public static partial class Net
 {
 	public static IText Text => Net<IText>.proxy;
 

@@ -1,6 +1,6 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
-using Terraria;
 using Terraria.ModLoader;
 
 namespace KokoLib;
@@ -12,13 +12,18 @@ public class KokoLib : Mod
 
 	public override void PostSetupContent()
 	{
-		Handlers.Sort((h, o) => h.Name.CompareTo(o.Name));
+		foreach (var mod in ModLoader.Mods)
+		{
+			TypeEmitter.EmittersForMod(mod);
+		}
+		
+		Handlers.Sort((h, o) => string.Compare(h.Name, o.Name, StringComparison.Ordinal));
 
 		ModHandlers = Handlers.ToArray();
 		byte vid = 0;
 		foreach (var handler in ModHandlers)
 		{
-			handler.type = vid++;
+			handler.Type = vid++;
 		}
 
 		foreach (var handle in Handlers)

@@ -28,7 +28,7 @@ public class Net<T>
 		proxy = (T)Activator.CreateInstance(clientType);
 	}
 
-	private static Type GenerateInterfaceImplementation(ModuleBuilder moduleBuilder, byte id)
+	static Type GenerateInterfaceImplementation(ModuleBuilder moduleBuilder, byte id)
 	{
 		var type = moduleBuilder.DefineType(
 				Net.ProxyModuleName + "." + typeof(T).Name + "Proxy",
@@ -39,7 +39,7 @@ public class Net<T>
 		BuildConstructor(type);
 
 		var t = Net.GetAllInterfaceMethods(typeof(T)).ToList();
-		t.Sort((m, o) => m.Name.CompareTo(o.Name));
+		t.Sort((m, o) => string.Compare(m.Name, o.Name, StringComparison.Ordinal));
 		byte i = 0;
 		foreach (var method in t)
 		{
@@ -49,24 +49,23 @@ public class Net<T>
 		return type.CreateType();
 	}
 
-	private static void BuildMethod(TypeBuilder type, MethodInfo interfaceMethodInfo, byte v, byte id)
+	static void BuildMethod(TypeBuilder type, MethodInfo interfaceMethodInfo, byte v, byte id)
 	{
-		MethodAttributes methodAttributes =
-				 MethodAttributes.Public
-			   | MethodAttributes.Virtual
-			   | MethodAttributes.Final
-			   | MethodAttributes.HideBySig
-			   | MethodAttributes.NewSlot;
+		const MethodAttributes methodAttributes = MethodAttributes.Public
+		                                          | MethodAttributes.Virtual
+		                                          | MethodAttributes.Final
+		                                          | MethodAttributes.HideBySig
+		                                          | MethodAttributes.NewSlot;
 
-		ParameterInfo[] parameters = interfaceMethodInfo.GetParameters();
-		Type[] paramTypes = parameters.Select(param => param.ParameterType).ToArray();
+		var parameters = interfaceMethodInfo.GetParameters();
+		var paramTypes = parameters.Select(param => param.ParameterType).ToArray();
 
-		MethodBuilder methodBuilder = type.DefineMethod(interfaceMethodInfo.Name, methodAttributes);
+		var methodBuilder = type.DefineMethod(interfaceMethodInfo.Name, methodAttributes);
 
 		methodBuilder.SetReturnType(interfaceMethodInfo.ReturnType);
 		methodBuilder.SetParameters(paramTypes);
 
-		ILGenerator generator = methodBuilder.GetILGenerator();
+		var generator = methodBuilder.GetILGenerator();
 		var lc0 = generator.DeclareLocal(typeof(ModPacket));
 		var netlabel = generator.DefineLabel();
 
@@ -74,15 +73,15 @@ public class Net<T>
 		var gpmi = gp.Method;
 
 		var thisT = typeof(Net<T>);
-		var modf = thisT.GetField("mod", BindingFlags.Static | BindingFlags.Public);
+		var modf = typeof(Net).GetField("HandlerMod", BindingFlags.Static | BindingFlags.Public);
 
-		generator.Emit(OpCodes.Ldsfld, typeof(Main).GetField("netMode"));
+		generator.Emit(OpCodes.Ldsfld, typeof(Main).GetField("netMode")!);
 		generator.Emit(OpCodes.Ldc_I4_0);
 		generator.Emit(OpCodes.Ceq);
 
 		generator.Emit(OpCodes.Brfalse_S, netlabel);
 
-		generator.Emit(OpCodes.Call, thisT.GetProperty("Handler").GetMethod);
+		generator.Emit(OpCodes.Call, thisT.GetProperty("Handler")!.GetMethod!);
 
 		for (int i = 0; i < paramTypes.Length; i++)
 		{
@@ -104,7 +103,7 @@ public class Net<T>
 
 		generator.Emit(OpCodes.Ldloc_0);
 		generator.Emit(OpCodes.Ldc_I4_S, id);
-		var write = typeof(ModPacket).GetMethod("Write", new Type[] { typeof(byte) });
+		var write = typeof(ModPacket).GetMethod("Write", new[] { typeof(byte) });
 		generator.Emit(OpCodes.Callvirt, write);
 		generator.Emit(OpCodes.Ldloc_0);
 		generator.Emit(OpCodes.Ldc_I4_S, v);
@@ -112,7 +111,7 @@ public class Net<T>
 
 		for (int i = 0; i < paramTypes.Length; i++)
 		{
-			TypeEmitter.Emit(generator, i, paramTypes[i]);
+			TypeEmitter.Emit(mod.Name ,generator, i, paramTypes[i]);
 		}
 
 		generator.Emit(OpCodes.Ldloc_0);
@@ -124,7 +123,7 @@ public class Net<T>
 		generator.Emit(OpCodes.Ret);
 	}
 
-	private static void BuildConstructor(TypeBuilder type)
+	static void BuildConstructor(TypeBuilder type)
 	{
 
 		var method = type.DefineConstructor(MethodAttributes.Public | MethodAttributes.HideBySig, CallingConventions.HasThis, Type.EmptyTypes);
@@ -142,14 +141,14 @@ public class Net<T>
 	internal static Action<BinaryReader, T> WrapMethod(MethodInfo m)
 	{
 		var paramTypes = m.GetParameters().Select(param => param.ParameterType).ToArray();
-		var met = new DynamicMethod(m.Name + "Wrap", typeof(void), new Type[] { typeof(BinaryReader) , typeof(T) });
+		var met = new DynamicMethod(m.Name + "Wrap", typeof(void), new[] { typeof(BinaryReader) , typeof(T) });
 		var il = met.GetILGenerator();
 
 		il.Emit(OpCodes.Ldarg_1);
 
 		foreach (var v in paramTypes)
 		{
-			TypeEmitter.Emit(il, v);
+			TypeEmitter.Emit(mod.Name, il, v);
 		}
 
 		il.Emit(OpCodes.Callvirt, m);

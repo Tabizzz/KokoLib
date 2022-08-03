@@ -1,5 +1,7 @@
-﻿using System;
-using System.IO;
+﻿using KokoLib.Emitters;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection.Emit;
 using Terraria.ModLoader;
 
@@ -7,62 +9,56 @@ namespace KokoLib;
 
 internal static class TypeEmitter
 {
-	private static Type[] supportedTypes = new Type[]
+	static readonly List<ModHandlerEmitter> Emitters = new(); 
+	static readonly Dictionary<string, ushort[]> EmittersByMod = new();
+	
+	internal static void Emit(string modName, ILGenerator generator, int i, Type type)
 	{
-		typeof(int),
-		typeof(string),
-		typeof(bool),
-		typeof(byte),
-		typeof(short),
-		typeof(float),
-		typeof(double),
-	};
-
-	internal static void Emit(ILGenerator generator, int i, Type type)
-	{
-		generator.Emit(OpCodes.Ldloc_0);
-		generator.Emit(OpCodes.Ldarg_S, (short) i + 1);
-		var m = typeof(ModPacket).GetMethod("Write", new Type[] { type });
-		generator.Emit(OpCodes.Callvirt, m);
+		foreach (var index in EmittersByMod[modName])
+		{
+			if (Emitters[index].Type != type)
+				continue;
+			Emitters[index].EmitWrite(generator, i + 1);
+			return;
+		}
 	}
 
-	internal static void Emit(ILGenerator il, Type type)
+	internal static void Emit(string modName, ILGenerator il, Type type)
 	{
-		il.Emit(OpCodes.Ldarg_0);
-		var t = typeof(BinaryReader);
-
-		if (type == supportedTypes[0])
+		foreach (var index in EmittersByMod[modName])
 		{
-			il.Emit(OpCodes.Call, t.GetMethod("ReadInt32"));
+			if (Emitters[index].Type != type)
+				continue;
+			Emitters[index].EmitRead(il);
+			return;
 		}
-		else if (type == supportedTypes[1])
-		{
-			il.Emit(OpCodes.Call, t.GetMethod("ReadString"));
-		}
-		else if (type == supportedTypes[2])
-		{
-			il.Emit(OpCodes.Call, t.GetMethod("ReadBoolean"));
-		}
-		else if (type == supportedTypes[3])
-		{
-			il.Emit(OpCodes.Call, t.GetMethod("ReadByte"));
-		}
-		else if (type == supportedTypes[4])
-		{
-			il.Emit(OpCodes.Call, t.GetMethod("ReadInt16"));
-		}
-		else if (type == supportedTypes[5])
-		{
-			il.Emit(OpCodes.Call, t.GetMethod("ReadSingle"));
-		}
-		else if (type == supportedTypes[6])
-		{
-			il.Emit(OpCodes.Call, t.GetMethod("ReadDouble"));
-		}
-
 	}
 
-	internal static bool IsSupported(Type parameterType) => Array.IndexOf(supportedTypes, parameterType) != -1;
+	internal static bool IsSupported(Type parameterType) => 
+		Emitters.Find(e => e.Type == parameterType) != null;
 
+	public static void EmittersForMod(Mod mod)
+	{
+		var list = new Dictionary<Type, ushort>();
+		// can be changed this code?
+		foreach (var bases in Emitters.Where(e=>e.Mod.Name == "KokoLib"))
+			list[bases.Type] = bases.Index;
+		foreach (var bases in Emitters.Where(e=>e.Mod.Name != "KokoLib" && e.Mod.Name != mod.Name))
+			list[bases.Type] = bases.Index;
+		foreach (var bases in Emitters.Where(e=>e.Mod.Name == mod.Name))
+			list[bases.Type] = bases.Index;
+		EmittersByMod.Add(mod.Name, list.Values.ToArray());
+	}
 
+	internal static void RegisterForMod(ModHandlerEmitter modHandlerEmitter)
+	{ 
+		if (Emitters.Find(p => p.Mod == modHandlerEmitter.Mod && p.Type == modHandlerEmitter.Type) != null)
+		{
+			throw new($"Mod {modHandlerEmitter.Mod.Name} already register an emitter for type {modHandlerEmitter.Type.Name}");
+		}
+		modHandlerEmitter.Index = (ushort)Emitters.Count;
+
+		Emitters.Add(modHandlerEmitter);
+		
+	}
 }
