@@ -28,6 +28,7 @@ public class KokoLib : Mod
 
 		foreach (var handle in Handlers)
 		{
+			handle.CreateMethods();
 			handle.CreateProxy();
 		}
 
