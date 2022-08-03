@@ -55,7 +55,7 @@ internal class ByteEmitter : BaseEmitter
 	public override void EmitRead(ILGenerator il)
 	{
 		il.Emit(OpCodes.Ldarg_0);
-		il.Emit(OpCodes.Call, BinaryReader.GetMethod("ReadSByte")!);
+		il.Emit(OpCodes.Call, BinaryReader.GetMethod("ReadByte")!);
 	}
 }
 
@@ -66,7 +66,7 @@ internal class SbyteEmitter : BaseEmitter
 	public override void EmitRead(ILGenerator il)
 	{
 		il.Emit(OpCodes.Ldarg_0);
-		il.Emit(OpCodes.Call, BinaryReader.GetMethod("ReadByte")!);
+		il.Emit(OpCodes.Call, BinaryReader.GetMethod("ReadSByte")!);
 	}
 }
 
