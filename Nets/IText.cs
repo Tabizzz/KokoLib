@@ -13,7 +13,7 @@ public interface IText
 			
 		public void New(string msg)
 		{
-			if(Main.netMode == NetmodeID.SinglePlayer || Main.netMode == NetmodeID.MultiplayerClient)
+			if(Main.netMode is NetmodeID.SinglePlayer or NetmodeID.MultiplayerClient)
 			{
 				Main.NewText(msg);
 			}
