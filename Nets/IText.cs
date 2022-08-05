@@ -1,5 +1,4 @@
 ﻿using Terraria;
-using Terraria.ID;
 
 namespace KokoLib.Nets;
 
@@ -10,18 +9,12 @@ public interface IText
 	private class TextImp : ModHandler<IText>, IText
 	{
 		public override IText Handler => this;
-			
+
+		[Broadcast(HandlerMode.ServerOnly)] // this indicate that he server will resend the packet to clients
+		[RunIn(HandlerMode.Client)] // this mark this method as only run in clients, including SinglePlayer
 		public void New(string msg)
 		{
-			if(Main.netMode is NetmodeID.SinglePlayer or NetmodeID.MultiplayerClient)
-			{
-				Main.NewText(msg);
-			}
-			else
-			{
-				// we are in server, sent the messsage to clients
-				Net.Text.New(msg);
-			}
+			Main.NewText(msg);	
 		}
 	}
-}
+} 

@@ -1,4 +1,4 @@
-﻿#ToDo
+﻿# To Do
 
 - [x] Allow adding custom emitters
 - [ ] Allow separate handlers for clients / server
