@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using Terraria.ModLoader;
@@ -15,6 +16,14 @@ public static partial class Net
 	/// This is the mod we use to generate and receive packages, by default it is Kokolib but it could be changed
 	/// </summary>
 	public static Mod HandlerMod;
+
+	// Capacity
+	public static int PacketCapacity = 256;
+	public static int DefaultPacketCapacity = 256;
+
+	// Target
+	public static int ToClient = -1;
+	public static int IgnoreClient = -1;
 
 	static Net()
 	{
@@ -34,15 +43,23 @@ public static partial class Net
 			throw new("Handlers can only be used in mods with \"Both\" side");
 		}
 		ValidateInterface<T>();
-		ValidateMethods<T>();
+		ValidateMethodsNames<T>();
+		ValidateMethodsParameters<T>();
 
 		KokoLib.Handlers.Add(modHandler);
 		HandlerMod ??= ModLoader.GetMod("KokoLib");
 		Net<T>.mod = modHandler.Mod;
 		Net<T>.handler = handler;
 	}
+	
+	private static void ValidateMethodsNames<T>() where T : class
+	{
+		var methods = GetAllInterfaceMethods(typeof(T)).GroupBy(m => m.Name);
+		if (methods.Any(g => g.Count() > 1))
+			throw new("ModHandler methods cant have overloads, use diferent method names");
+	}
 
-	static void ValidateMethods<T>() where T : class
+	static void ValidateMethodsParameters<T>() where T : class
 	{
 		var methods = GetAllInterfaceMethods(typeof(T));
 		foreach (var method in methods)
@@ -85,5 +102,8 @@ public static partial class Net
 	{
 		if(!typeof(T).IsInterface)
 			throw new ArgumentException("Generic type in ModHandler<T> must be an interface");
+		// interface must be public to implement
+		if(!typeof(T).IsPublic || typeof(T).IsNotPublic)
+			throw new ArgumentException("Generic type in ModHandler<T> must be public");
 	}
 }

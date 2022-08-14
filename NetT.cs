@@ -5,6 +5,7 @@ using Terraria.ModLoader;
 using System.Linq;
 using Terraria;
 using System.IO;
+using KokoLib.Emitters;
 
 namespace KokoLib;
 
@@ -43,13 +44,20 @@ public class Net<T>
 		byte i = 0;
 		foreach (var method in t)
 		{
-			BuildMethod(type, method, i++, id);
+			var mi = BuildInternalMethod(type, method);
+			BuildMethod(type, method, i++, id, mi);
 		}
 
 		return type.CreateType();
 	}
 
-	static void BuildMethod(TypeBuilder type, MethodInfo interfaceMethodInfo, byte v, byte id)
+	private static object BuildInternalMethod(TypeBuilder type, MethodInfo method)
+	{
+		// for future use
+		return null;
+	}
+
+	static void BuildMethod(TypeBuilder type, MethodInfo interfaceMethodInfo, byte v, byte id, object mi)
 	{
 		const MethodAttributes methodAttributes = MethodAttributes.Public
 		                                          | MethodAttributes.Virtual
@@ -115,9 +123,7 @@ public class Net<T>
 		}
 
 		generator.Emit(OpCodes.Ldloc_0);
-		generator.Emit(OpCodes.Ldc_I4_M1);
-		generator.Emit(OpCodes.Ldc_I4_M1);
-		var m = typeof(ModPacket).GetMethod("Send");
+		var m = typeof(EmitterHelper).GetMethod("SendAndReset");
 		generator.Emit(OpCodes.Call, m);
 
 		generator.Emit(OpCodes.Ret);

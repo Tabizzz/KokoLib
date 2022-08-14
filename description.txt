@@ -1,1 +1,1 @@
-Koko Lib is a pretty cool mod, it does...this. Modify this file with a description of your mod.
+WIP net library, for more info read [url=https://github.com/Tabizzz/KokoLib/wiki]the wiki[/url]

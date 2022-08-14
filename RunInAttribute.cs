@@ -2,7 +2,7 @@
 
 namespace KokoLib;
 
-[AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+[AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = false)]
 public class RunInAttribute : Attribute
 {
 	public RunInAttribute(HandlerMode client)

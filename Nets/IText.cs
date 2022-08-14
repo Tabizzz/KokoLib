@@ -10,7 +10,7 @@ public interface IText
 	{
 		public override IText Handler => this;
 
-		[Broadcast(HandlerMode.ServerOnly)] // this indicate that he server will resend the packet to clients
+		[Broadcast] // this indicate that he server will resend the packet to clients
 		[RunIn(HandlerMode.Client)] // this mark this method as only run in clients, including SinglePlayer
 		public void New(string msg)
 		{

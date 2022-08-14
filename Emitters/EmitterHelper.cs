@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using Terraria.ModLoader;
+
 namespace KokoLib.Emitters;
 
 public static class EmitterHelper
@@ -14,5 +16,12 @@ public static class EmitterHelper
 	public static void CallWriteEmitter(BinaryWriter writer, ushort index, object ins)
 	{
 		TypedEmitters[index].InternalWrite(writer, ins);
+	}
+
+	public static void SendAndReset(ModPacket packet)
+	{
+		packet.Send(Net.ToClient, Net.IgnoreClient);
+		Net.ToClient = -1;
+		Net.IgnoreClient = -1;
 	}
 }
