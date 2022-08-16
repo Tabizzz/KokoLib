@@ -1,5 +1,4 @@
-﻿using log4net.Repository.Hierarchy;
-using System.IO;
+﻿using System.IO;
 using Terraria.ModLoader;
 
 namespace KokoLib.Emitters;
