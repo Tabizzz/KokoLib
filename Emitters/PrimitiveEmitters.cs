@@ -1,105 +1,67 @@
-﻿using System;
-using System.Reflection.Emit;
+﻿using System.IO;
 
 namespace KokoLib.Emitters;
 
-internal abstract  class BaseEmitter : ModHandlerEmitter
+internal class IntEmitter : ModHandlerEmitter<int>
 {
-	public override void EmitWrite(ILGenerator il, int index)
-	{
-		il.Emit(OpCodes.Ldloc_0);
-		il.Emit(OpCodes.Ldarg_S, index);
-		var m = ModPacket.GetMethod("Write", new[] { Type });
-		il.Emit(OpCodes.Callvirt, m!);
-	}
+	public override int Read(BinaryReader reader) => reader.ReadInt32();
+
+	public override void Write(BinaryWriter writer, int ins) => writer.Write(ins);
 }
 
-internal class IntEmitter : BaseEmitter
+internal class StringEmitter : ModHandlerEmitter<string>
 {
-	public override Type Type => typeof(int);
+	public override string Read(BinaryReader reader) => reader.ReadString();
 
-	public override void EmitRead(ILGenerator il)
-	{
-		il.Emit(OpCodes.Ldarg_0);
-		il.Emit(OpCodes.Call, BinaryReader.GetMethod("ReadInt32")!);
-	}
+	public override void Write(BinaryWriter writer, string ins) => writer.Write(ins);
 }
 
-internal class StringEmitter : BaseEmitter
+internal class BoolEmitter : ModHandlerEmitter<bool>
 {
-	public override Type Type => typeof(string);
+	public override bool Read(BinaryReader reader) => reader.ReadBoolean();
 
-	public override void EmitRead(ILGenerator il)
-	{
-		il.Emit(OpCodes.Ldarg_0);
-		il.Emit(OpCodes.Call, BinaryReader.GetMethod("ReadString")!);
-	}
+	public override void Write(BinaryWriter writer, bool ins) => writer.Write(ins);
 }
 
 
-internal class BoolEmitter : BaseEmitter
+internal class ByteEmitter : ModHandlerEmitter<byte>
 {
-	public override Type Type => typeof(bool);
+	public override byte Read(BinaryReader reader) => reader.ReadByte();
 
-	public override void EmitRead(ILGenerator il)
-	{
-		il.Emit(OpCodes.Ldarg_0);
-		il.Emit(OpCodes.Call, BinaryReader.GetMethod("ReadBoolean")!);
-	}
+	public override void Write(BinaryWriter writer, byte ins) => writer.Write(ins);
 }
 
-internal class ByteEmitter : BaseEmitter
+internal class SByteEmitter : ModHandlerEmitter<sbyte>
 {
-	public override Type Type => typeof(byte);
+	public override sbyte Read(BinaryReader reader) => reader.ReadSByte();
 
-	public override void EmitRead(ILGenerator il)
-	{
-		il.Emit(OpCodes.Ldarg_0);
-		il.Emit(OpCodes.Call, BinaryReader.GetMethod("ReadByte")!);
-	}
+	public override void Write(BinaryWriter writer, sbyte ins) => writer.Write(ins);
 }
 
-internal class SbyteEmitter : BaseEmitter
+internal class ShortEmitter : ModHandlerEmitter<short>
 {
-	public override Type Type => typeof(sbyte);
+	public override short Read(BinaryReader reader) => reader.ReadInt16();
 
-	public override void EmitRead(ILGenerator il)
-	{
-		il.Emit(OpCodes.Ldarg_0);
-		il.Emit(OpCodes.Call, BinaryReader.GetMethod("ReadSByte")!);
-	}
+	public override void Write(BinaryWriter writer, short ins) => writer.Write(ins);
 }
 
-
-internal class ShortEmitter : BaseEmitter
+internal class UShortEmitter : ModHandlerEmitter<ushort>
 {
-	public override Type Type => typeof(short);
+	public override ushort Read(BinaryReader reader) => reader.ReadUInt16();
 
-	public override void EmitRead(ILGenerator il)
-	{
-		il.Emit(OpCodes.Ldarg_0);
-		il.Emit(OpCodes.Call, BinaryReader.GetMethod("ReadInt16")!);
-	}
+	public override void Write(BinaryWriter writer, ushort ins) => writer.Write(ins);
 }
 
-internal class FloatEmitter : BaseEmitter
+internal class FloatEmitter : ModHandlerEmitter<float>
 {
-	public override Type Type => typeof(float);
+	public override float Read(BinaryReader reader) => reader.ReadSingle();
 
-	public override void EmitRead(ILGenerator il)
-	{
-		il.Emit(OpCodes.Ldarg_0);
-		il.Emit(OpCodes.Call, BinaryReader.GetMethod("ReadSingle")!);
-	}
+	public override void Write(BinaryWriter writer, float ins) => writer.Write(ins);
 }
 
-internal class DoubleEmitter : BaseEmitter
+internal class DoubleEmitter : ModHandlerEmitter<double>
 {
-	public override Type Type => typeof(double);
+	public override double Read(BinaryReader reader) => reader.ReadDouble();
 
-	public override void EmitRead(ILGenerator il)
-	{
-		il.Emit(OpCodes.Ldarg_0);
-		il.Emit(OpCodes.Call, BinaryReader.GetMethod("ReadDouble")!);
-	}
+	public override void Write(BinaryWriter writer, double ins) => writer.Write(ins);
 }

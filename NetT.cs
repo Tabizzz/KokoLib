@@ -25,14 +25,14 @@ public class Net<T>
 	internal static void CreateProxy(ModuleBuilder moduleBuilder, byte type)
 	{
 		var clientType = GenerateInterfaceImplementation(moduleBuilder, type);
-		mod.Logger.Info($"Generated proxy handler: {clientType}");
+		mod.Logger.Info($"Generated proxy handler: {clientType} in mod {Net.HandlerMod.Name} from {mod.Name}");
 		proxy = (T)Activator.CreateInstance(clientType);
 	}
 
 	static Type GenerateInterfaceImplementation(ModuleBuilder moduleBuilder, byte id)
 	{
 		var type = moduleBuilder.DefineType(
-				Net.ProxyModuleName + "." + typeof(T).Name + "Proxy",
+				Net.ProxyModuleName + "." + mod.Name + "." + typeof(T).Name + "Proxy",
 				TypeAttributes.Public,
 				typeof(object),
 				new[] { typeof(T) });

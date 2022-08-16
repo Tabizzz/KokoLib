@@ -8,7 +8,7 @@ class NpcEmitter : ModHandlerEmitter<NPC>
 {
 	public override NPC Read(BinaryReader reader)
 	{
-		var npc = Main.npc[reader.ReadInt32()];
+		var npc = Main.npc[reader.ReadByte()];
 
 		if(Main.netMode == NetmodeID.Server)
 		{
@@ -19,6 +19,6 @@ class NpcEmitter : ModHandlerEmitter<NPC>
 
 	public override void Write(BinaryWriter writer, NPC ins)
 	{
-		writer.Write(ins.whoAmI);
+		writer.Write((byte)ins.whoAmI);
 	}
 }

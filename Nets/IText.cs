@@ -1,4 +1,6 @@
 ﻿using Terraria;
+using Terraria.ID;
+using Terraria.ModLoader;
 
 namespace KokoLib.Nets;
 
@@ -14,7 +16,14 @@ public interface IText
 		[RunIn(HandlerMode.Client)] // this mark this method as only run in clients, including SinglePlayer
 		public void New(string msg)
 		{
-			Main.NewText(msg);	
+			if(Main.netMode is NetmodeID.MultiplayerClient or NetmodeID.SinglePlayer)
+			{
+				Main.NewText(msg);
+			}
+			else
+			{
+				Net.Text.New(msg);
+			}
 		}
 	}
 } 

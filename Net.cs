@@ -74,9 +74,14 @@ public static partial class Net
 			}
 			foreach (var param in method.GetParameters())
 			{
-				if (!TypeEmitter.IsSupported(param.ParameterType))
+				if (!(TypeEmitter.IsSupported(param.ParameterType) || (param.ParameterType.IsArray && TypeEmitter.IsSupported(param.ParameterType.GetElementType()))))
 				{
-					throw new($"Parameter {param.Name} has an unsupported type");
+					throw new($"Parameter {param.Name} has an unsupported type: {param.ParameterType.Name}");
+				}
+				
+				if (param.IsOut || param.ParameterType.IsByRef)
+				{
+					throw new($"Parameter {param.Name} cant be out or ref");
 				}
 			}
 		}

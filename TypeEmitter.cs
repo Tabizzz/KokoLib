@@ -3,13 +3,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
+using Microsoft.Xna.Framework;
 using Terraria.ModLoader;
 
 namespace KokoLib;
 
 internal static class TypeEmitter
 {
-	static readonly List<ModHandlerEmitter> Emitters = new(); 
+	internal static readonly List<ModHandlerEmitter> Emitters = new(); 
 	static readonly Dictionary<string, ushort[]> EmittersByMod = new();
 	
 	internal static void Emit(string modName, ILGenerator generator, int i, Type type)
@@ -18,8 +19,24 @@ internal static class TypeEmitter
 		{
 			if (Emitters[index].Type != type)
 				continue;
-			Emitters[index].EmitWrite(generator, i + 1);
+			Emitters[index].EmitWrite(generator, il=>il.Emit(OpCodes.Ldarg_S, i + 1) );
 			return;
+		}
+		if (!type.IsArray)
+			return;
+		EmitArray(modName, generator, i, type, type.GetElementType());
+	}
+
+	static void EmitArray(string modName, ILGenerator generator, int i, Type type, Type getElementType)
+	{
+		foreach (var index in EmittersByMod[modName])
+		{
+			if (Emitters[index].Type != getElementType)
+				continue;
+		
+			Emitters[index].EmitWriteArray(generator, il=>il.Emit(OpCodes.Ldarg_S, i + 1) );
+			return;
+			
 		}
 	}
 
@@ -30,6 +47,20 @@ internal static class TypeEmitter
 			if (Emitters[index].Type != type)
 				continue;
 			Emitters[index].EmitRead(il);
+			return;
+		}
+		if (!type.IsArray)
+			return;
+		EmitArray(modName, il, type, type.GetElementType());
+	}
+
+	private static void EmitArray(string modName, ILGenerator il, Type type1, Type type2)
+	{
+		foreach (var index in EmittersByMod[modName])
+		{
+			if (Emitters[index].Type != type2)
+				continue;
+			Emitters[index].EmitReadArray(il);
 			return;
 		}
 	}

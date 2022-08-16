@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using log4net.Repository.Hierarchy;
 using System.IO;
 using Terraria.ModLoader;
 
@@ -6,16 +6,24 @@ namespace KokoLib.Emitters;
 
 public static class EmitterHelper
 {
-	internal static List<TypedModHandlerEmitter> TypedEmitters = new();
-
 	public static object CallReadEmitter(BinaryReader reader, ushort index)
 	{
-		return TypedEmitters[index].InternalRead(reader);
+		return  TypeEmitter.Emitters[index].InternalRead(reader);
 	}
 	
-	public static void CallWriteEmitter(BinaryWriter writer, ushort index, object ins)
+	public static object CallReadArrayEmitter(BinaryReader reader, ushort index)
 	{
-		TypedEmitters[index].InternalWrite(writer, ins);
+		return  TypeEmitter.Emitters[index].InternalReadArray(reader);
+	}
+	
+	public static void CallWriteEmitter(BinaryWriter writer,object ins, ushort index)
+	{
+		TypeEmitter.Emitters[index].InternalWrite(writer, ins);
+	}
+	
+	public static void CallWriteArrayEmitter(BinaryWriter writer,object ins, ushort index)
+	{
+		TypeEmitter.Emitters[index].InternalWriteArray(writer, ins);
 	}
 
 	public static void SendAndReset(ModPacket packet)
