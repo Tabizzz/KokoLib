@@ -65,11 +65,11 @@ public abstract class ModHandlerEmitter : ModType, IIndexed
 		// load the instance to write
 		instance(il);
 
-		// load the index of this instance
-		il.Emit(OpCodes.Ldc_I4_S, Index);
-
 		// if we want to pass a value type we need to box into a object
 		if (Type.IsValueType) il.Emit(OpCodes.Box, Type);
+
+		// load the index of this instance
+		il.Emit(OpCodes.Ldc_I4_S, Index);
 
 		//call the writer
 		il.Emit(OpCodes.Call, write!);
