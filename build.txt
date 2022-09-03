@@ -1,3 +1,4 @@
-displayName = Koko Lib
+displayName = Koko Net Lib
 author = Kokopai
-version = 0.3.1.1
+version = 0.3.2
+homepage = https://discord.gg/DtWbFu6jxe
