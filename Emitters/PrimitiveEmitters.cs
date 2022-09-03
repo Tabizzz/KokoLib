@@ -52,6 +52,20 @@ internal class UShortEmitter : ModHandlerEmitter<ushort>
 	public override void Write(BinaryWriter writer, ushort ins) => writer.Write(ins);
 }
 
+internal class LongEmitter : ModHandlerEmitter<long>
+{
+	public override long Read(BinaryReader reader) => reader.ReadInt64();
+
+	public override void Write(BinaryWriter writer, long ins) => writer.Write(ins);
+}
+
+internal class ULongtEmitter : ModHandlerEmitter<ulong>
+{
+	public override ulong Read(BinaryReader reader) => reader.ReadUInt64();
+
+	public override void Write(BinaryWriter writer, ulong ins) => writer.Write(ins);
+}
+
 internal class FloatEmitter : ModHandlerEmitter<float>
 {
 	public override float Read(BinaryReader reader) => reader.ReadSingle();
