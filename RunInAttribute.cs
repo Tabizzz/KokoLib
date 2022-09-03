@@ -5,10 +5,10 @@ namespace KokoLib;
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
 public class RunInAttribute : Attribute
 {
-	public RunInAttribute(HandlerMode client)
+	public RunInAttribute(HandlerMode mode)
 	{
-		Client = client;
+		Mode = mode;
 	}
 
-	public HandlerMode Client { get; }
+	public HandlerMode Mode { get; }
 }
