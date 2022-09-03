@@ -66,7 +66,7 @@ public static partial class Net
 		{
 			if(method.ReturnType != typeof(void))
 			{
-				throw new("ModHandler methods cant return");
+				throw new("ModHandler methods cant return nothing");
 			}
 			if(method.IsGenericMethod || method.IsGenericMethodDefinition)
 			{
@@ -106,9 +106,9 @@ public static partial class Net
 	static void ValidateInterface<T>() where T : class
 	{
 		if(!typeof(T).IsInterface)
-			throw new ArgumentException("Generic type in ModHandler<T> must be an interface");
+			throw new ArgumentException("Generic type <T> in ModHandler<T> must be an interface");
 		// interface must be public to implement
 		if(!(typeof(T).IsPublic || typeof(T).IsNestedPublic))
-			throw new ArgumentException("Generic type in ModHandler<T> must be public");
+			throw new ArgumentException("Generic type <T> in ModHandler<T> must be public");
 	}
 }
