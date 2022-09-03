@@ -108,7 +108,7 @@ public static partial class Net
 		if(!typeof(T).IsInterface)
 			throw new ArgumentException("Generic type in ModHandler<T> must be an interface");
 		// interface must be public to implement
-		if(!typeof(T).IsPublic || typeof(T).IsNotPublic)
+		if(!(typeof(T).IsPublic || typeof(T).IsNestedPublic))
 			throw new ArgumentException("Generic type in ModHandler<T> must be public");
 	}
 }
