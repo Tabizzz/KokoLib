@@ -6,8 +6,7 @@ namespace KokoLib.Nets;
 
 public interface IText
 {
-	[Broadcast(false, true)] // this indicate that he server will resend the packet to clients
-	[RunIn(HandlerMode.Client)] // this mark this method as only run in clients, including SinglePlayer
+	[Broadcast] // this indicate that he server will resend the packet to clients
 	void New(string msg);
 
 	private class TextImp : ModHandler<IText>, IText
