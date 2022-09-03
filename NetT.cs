@@ -150,7 +150,11 @@ public class Net<T>
 		var met = new DynamicMethod(m.Name + "Wrap", typeof(void), new[] { typeof(BinaryReader) , typeof(T), typeof(int) });
 		var il = met.GetILGenerator();
 
-		broadcast = m.GetCustomAttribute<BroadcastAttribute>() ?? broadcast;
+		var nobroadcast = m.GetCustomAttribute<NoBroadcastAttribute>() is not null;
+		if (nobroadcast)
+			broadcast = null;
+		else
+			broadcast = m.GetCustomAttribute<BroadcastAttribute>() ?? broadcast;
 
 		if (broadcast != null)
 			return emitWithBroadcast(il, met, paramTypes, broadcast, m);
