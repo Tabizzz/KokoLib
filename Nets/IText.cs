@@ -21,17 +21,3 @@ public interface IText
 		}
 	}
 } 
-
-class npc : ModPlayer
-{
-	public override bool IsLoadingEnabled(Mod mod)
-	{
-		return Debugger.IsAttached;
-	}
-
-	public override void OnHitNPC(Item item, NPC target, int damage, float knockback, bool crit)
-	{
-		Net.Text.New(target.whoAmI.ToString());
-		base.OnHitNPC(item, target, damage, knockback, crit);
-	}
-}
