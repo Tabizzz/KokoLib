@@ -144,11 +144,16 @@ public class Net<T>
 		generator.Emit(OpCodes.Ret);
 	}
 
-	internal static Action<BinaryReader, T> WrapMethod(MethodInfo m)
+	internal static Action<BinaryReader, T, int> WrapMethod(MethodInfo m, BroadcastAttribute broadcast = null)
 	{
 		var paramTypes = m.GetParameters().Select(param => param.ParameterType).ToArray();
-		var met = new DynamicMethod(m.Name + "Wrap", typeof(void), new[] { typeof(BinaryReader) , typeof(T) });
+		var met = new DynamicMethod(m.Name + "Wrap", typeof(void), new[] { typeof(BinaryReader) , typeof(T), typeof(int) });
 		var il = met.GetILGenerator();
+
+		broadcast = m.GetCustomAttribute<BroadcastAttribute>() ?? broadcast;
+
+		if (broadcast != null)
+			return emitWithBroadcast(il, met, paramTypes, broadcast, m);
 
 		il.Emit(OpCodes.Ldarg_1);
 
@@ -158,9 +163,72 @@ public class Net<T>
 		}
 
 		il.Emit(OpCodes.Callvirt, m);
+	
+		il.Emit(OpCodes.Ret);
+
+		return met.CreateDelegate<Action<BinaryReader, T, int>>();
+	}
+
+	private static Action<BinaryReader, T, int> emitWithBroadcast(ILGenerator il, DynamicMethod met, Type[] paramTypes, BroadcastAttribute broadcast, MethodInfo m)
+	{
+		var locals = new LocalBuilder[paramTypes.Length];
+		for (int i = 0; i < paramTypes.Length; i++)
+		{
+			locals[i] = il.DeclareLocal(paramTypes[i]);
+		}
+
+		for (int i = 0; i < paramTypes.Length; i++)
+		{
+			Type v = paramTypes[i];
+			TypeEmitter.Emit(mod.Name, il, v);
+			il.Emit(OpCodes.Stloc_S, locals[i]);
+		}
+
+		il.Emit(OpCodes.Ldarg_1);
+
+		for (int i = 0; i < paramTypes.Length; i++)
+		{
+			il.Emit(OpCodes.Ldloc_S, locals[i]);
+		}
+
+		il.Emit(OpCodes.Callvirt, m);
+
+		var end = il.DefineLabel();
+
+		il.Emit(OpCodes.Ldsfld, typeof(Main).GetField("netMode")!);
+		il.Emit(OpCodes.Ldc_I4_2);
+		il.Emit(OpCodes.Ceq);
+
+		il.Emit(OpCodes.Brfalse_S, end);
+
+
+		if(broadcast.ToSenderOnly == true)
+		{
+			il.Emit(OpCodes.Ldarg_2);
+			il.Emit(OpCodes.Stsfld, typeof(Net).GetField("ToClient")!);
+		}
+		if (broadcast.ExcludeSender == true)
+		{
+			il.Emit(OpCodes.Ldarg_2);
+			il.Emit(OpCodes.Stsfld, typeof(Net).GetField("IgnoreClient")!);
+		}
+
+		var proxy = typeof(Net<T>).GetProperty(nameof(Proxy)).GetMethod!;
+
+		il.Emit(OpCodes.Call, proxy);
+
+		for (int i = 0; i < paramTypes.Length; i++)
+		{
+			il.Emit(OpCodes.Ldloc_S, locals[i]);
+		}
+
+		il.Emit(OpCodes.Callvirt, m);
+
+		il.MarkLabel(end);
 
 		il.Emit(OpCodes.Ret);
 
-		return met.CreateDelegate<Action<BinaryReader, T>>();
+		return met.CreateDelegate<Action<BinaryReader, T, int>>();
 	}
+
 }

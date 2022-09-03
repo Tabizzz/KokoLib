@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Reflection;
 using System.Linq;
 using Terraria.ModLoader;
 
@@ -7,7 +8,7 @@ namespace KokoLib;
 
 public abstract class ModHandler<T> : ModHandler where T : class
 {
-	public Action<BinaryReader, T>[] Methods;
+	public Action<BinaryReader, T, int>[] Methods;
 
 	protected sealed override void Register()
 	{
@@ -29,15 +30,16 @@ public abstract class ModHandler<T> : ModHandler where T : class
 	
 	internal sealed override void CreateMethods()
 	{
+		var broadcast = typeof(T).GetCustomAttribute<BroadcastAttribute>();
 		var t = Net.GetAllInterfaceMethods(typeof(T)).ToList();
 		t.Sort((m, o) => string.Compare(m.Name, o.Name, StringComparison.Ordinal));
-		Methods = t.Select(Net<T>.WrapMethod).ToArray();
+		Methods = t.Select(m => Net<T>.WrapMethod(m, broadcast)).ToArray();
 		t.Clear();
 	}
 
 	public override void Handle(BinaryReader reader, byte method)
 	{
-		Methods[method](reader, Handler);
+		Methods[method](reader, Handler, WhoAmI);
 	}
 }
 
