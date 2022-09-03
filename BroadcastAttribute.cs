@@ -2,7 +2,7 @@
 
 namespace KokoLib;
 
-[AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
+[AttributeUsage(AttributeTargets.Method | AttributeTargets.Interface)]
 public class BroadcastAttribute : Attribute
 {
 	public BroadcastAttribute(bool toSenderOnly = false, bool excludeSender = false)

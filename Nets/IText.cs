@@ -5,9 +5,9 @@ using Terraria.ModLoader;
 
 namespace KokoLib.Nets;
 
+[Broadcast] // this indicate that he server will resend the packet to clients
 public interface IText
 {
-	[Broadcast] // this indicate that he server will resend the packet to clients
 	void New(string msg);
 
 	private class TextImp : ModHandler<IText>, IText
