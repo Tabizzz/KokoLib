@@ -1,1 +1,3 @@
 WIP net library, for more info read [url=https://github.com/Tabizzz/KokoLib/wiki]the wiki[/url]
+
+Enter this [url=https://discord.gg/DtWbFu6jxe]Discord[/url] to receive help when you are developing with the mod
